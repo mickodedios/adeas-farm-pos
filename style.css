@@ -1593,6 +1593,27 @@ a {
   .header-date-time {
     display: none;
   }
+  
+  #dbStatusText {
+    display: none;
+  }
+  
+  .db-status-badge {
+    padding: 6px;
+  }
+  
+  .user-info {
+    display: none;
+  }
+  
+  .user-profile {
+    padding: 0;
+    background: transparent;
+  }
+  
+  .header-right {
+    gap: 10px;
+  }
 }
 
 @media print {
