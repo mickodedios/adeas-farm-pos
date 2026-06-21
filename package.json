@@ -1,0 +1,21 @@
+{
+  "name": "adeas-farm-pos",
+  "version": "1.0.0",
+  "description": "Complete POS and Expense Tracking System for Adea's Farm",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "pos",
+    "farm",
+    "expense-tracker"
+  ],
+  "author": "Antigravity AI",
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^5.1.4"
+  }
+}

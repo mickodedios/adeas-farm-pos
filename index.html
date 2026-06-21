@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adea's Farm - POS & Expense Tracker</title>
+  <!-- SEO & Icons -->
+  <meta name="description" content="Professional Point of Sale and Expense Tracking System tailored for Adea's Farm operations.">
+  <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3060/3060046.png">
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+  <!-- Chart.js for Reports -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- Loading Spinner -->
+  <div id="loaderOverlay" class="loader-overlay" style="display: none;">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- ==========================================================================
+       LOGIN PAGE VIEW
+       ========================================================================== -->
+  <div id="authPage" class="auth-container">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <i class="fa-solid fa-wheat-awn"></i>
+      </div>
+      <h1 class="auth-title">Adea's Farm</h1>
+      <p class="auth-subtitle">POS & Expense Tracker System</p>
+      
+      <form id="loginForm">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-envelope input-icon"></i>
+            <input type="email" id="loginEmail" class="form-control" placeholder="staff@adeasfarm.com" required autocomplete="username">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-lock input-icon"></i>
+            <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+          </div>
+        </div>
+        
+        <button type="submit" class="btn-primary">
+          <i class="fa-solid fa-right-to-bracket mr-2"></i> Log In
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MAIN APPLICATION VIEW (SHELL)
+       ========================================================================== -->
+  <div id="appLayout" class="app-wrapper" style="display: none;">
+    
+    <!-- Collapsible/Sticky Navigation Sidebar -->
+    <aside id="appSidebar" class="sidebar">
+      <div class="sidebar-logo">
+        <i class="fa-solid fa-leaf sidebar-logo-icon"></i>
+        <span class="sidebar-logo-text">Adea's Farm</span>
+      </div>
+      
+      <nav class="sidebar-menu">
+        <li class="menu-item active" data-view="dashboard">
+          <a><i class="fa-solid fa-chart-pie"></i><span>Dashboard</span></a>
+        </li>
+        <li class="menu-item" data-view="pos">
+          <a><i class="fa-solid fa-cash-register"></i><span>POS Module</span></a>
+        </li>
+        <li class="menu-item" data-view="inventory">
+          <a><i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span></a>
+        </li>
+        <li class="menu-item" data-view="expenses">
+          <a><i class="fa-solid fa-wallet"></i><span>Expenses</span></a>
+        </li>
+        <li class="menu-item" data-view="sales">
+          <a><i class="fa-solid fa-receipt"></i><span>Sales History</span></a>
+        </li>
+        <li class="menu-item" data-view="reports">
+          <a><i class="fa-solid fa-chart-line"></i><span>Reports</span></a>
+        </li>
+        <li class="menu-item" data-view="settings">
+          <a><i class="fa-solid fa-sliders"></i><span>Settings</span></a>
+        </li>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <li class="menu-item" id="logoutBtn" style="list-style: none;">
+          <a style="color: #ff8a80;"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a>
+        </li>
+      </div>
+    </aside>
+
+    <!-- Content Workspace -->
+    <main class="main-content">
+      
+      <!-- Top Sticky Header -->
+      <header class="header">
+        <div class="header-left">
+          <button id="sidebarToggle" class="menu-toggle">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <h2 id="currentViewTitle" class="header-title">Dashboard</h2>
+        </div>
+        
+        <div class="header-right">
+          <!-- Time indicator -->
+          <div class="header-date-time">
+            <i class="fa-regular fa-clock"></i>
+            <span id="headerClock">Loading time...</span>
+          </div>
+
+          <!-- Connection Mode badge (Firebase / Mock) -->
+          <div id="dbStatusBadge" class="db-status-badge mock">
+            <span class="status-dot"></span>
+            <span id="dbStatusText">Mock Mode</span>
+          </div>
+
+          <!-- User Details badge -->
+          <div class="user-profile">
+            <div id="userInitials" class="user-avatar">AF</div>
+            <div class="user-info">
+              <span id="userName" class="user-name">Loading...</span>
+              <span id="userRole" class="user-role">Role</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Dynamic Views Wrapper -->
+      <div class="view-area">
+
+        <!-- ==========================================
+             VIEW: DASHBOARD
+             ========================================== -->
+        <section id="view-dashboard" class="view-panel active">
+          <!-- Summary Metrics row -->
+          <div class="dashboard-grid">
+            <div class="stat-card sales">
+              <div class="stat-info">
+                <span class="stat-label">Sales Today</span>
+                <span id="dashSalesToday" class="stat-value">₱0.00</span>
+              </div>
+              <div class="stat-icon"><i class="fa-solid fa-chart-simple"></i></div>
+            </div>
+            
+            <div class="stat-card expenses">
+              <div class="stat-info">
+                <span class="stat-label">Expenses Today</span>
+                <span id="dashExpensesToday" class="stat-value">₱0.00</span>
+              </div>
+              <div class="stat-icon"><i class="fa-solid fa-wallet"></i></div>
+            </div>
+            
+            <div class="stat-card profit">
+              <div class="stat-info">
+                <span class="stat-label">Net Profit Today</span>
+                <span id="dashNetProfit" class="stat-value">₱0.00</span>
+              </div>
+              <div class="stat-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+            </div>
+            
+            <div class="stat-card transactions">
+              <div class="stat-info">
+                <span class="stat-label">Transactions Today</span>
+                <span id="dashTransactionsCount" class="stat-value">0</span>
+              </div>
+              <div class="stat-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+            </div>
+          </div>
+
+          <!-- Charts and low stock alert grid -->
+          <div class="dashboard-details-grid">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fa-solid fa-chart-line"></i> Sales & Expenses Trend (7 Days)</h3>
+              </div>
+              <div style="height: 320px; position: relative;">
+                <canvas id="dashTrendChart"></canvas>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title" style="color: var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i> Low Stock Alerts</h3>
+              </div>
+              <div id="dashLowStockAlerts" class="low-stock-alert-list">
+                <!-- Alerts are dynamically populated -->
+                <p class="text-muted" style="text-align: center; padding: 20px;">All products are fully stocked.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             VIEW: POS MODULE
+             ========================================== -->
+        <section id="view-pos" class="view-panel">
+          <div class="pos-layout">
+            
+            <!-- Products Panel (Left) -->
+            <div class="pos-products-panel">
+              <div class="filter-bar">
+                <div class="filter-left">
+                  <div class="search-input-wrapper">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="posSearch" class="search-input" placeholder="Search product...">
+                  </div>
+                </div>
+                <div class="filter-right">
+                  <span class="text-muted" style="font-size: 0.9rem; font-weight: 500;">Filter by Catalog</span>
+                </div>
+              </div>
+
+              <!-- Product items container -->
+              <div id="posCatalogGrid" class="pos-catalog-grid">
+                <!-- Injected dynamically -->
+              </div>
+            </div>
+
+            <!-- Cart Summary Panel (Right) -->
+            <div class="pos-cart-panel">
+              <div class="cart-header">
+                <span class="cart-title"><i class="fa-solid fa-shopping-cart"></i> Current Cart</span>
+                <span id="posTransactionNo" class="cart-tx-no">TX-00000000</span>
+              </div>
+
+              <!-- Scrollable cart list -->
+              <div id="posCartItemsList" class="cart-items-list">
+                <!-- Cart items rendered here or empty state -->
+                <div class="cart-empty-state">
+                  <i class="fa-solid fa-basket-shopping"></i>
+                  <p>Your cart is empty. Click items on the left to add.</p>
+                </div>
+              </div>
+
+              <!-- Cart totals and actions footer -->
+              <div class="cart-summary">
+                <div class="summary-row">
+                  <span>Subtotal</span>
+                  <span id="posSubtotal">₱0.00</span>
+                </div>
+                <div class="summary-row total">
+                  <span>Total Amount</span>
+                  <span id="posTotal">₱0.00</span>
+                </div>
+                
+                <button type="button" id="posCheckoutBtn" class="checkout-btn" disabled>
+                  <i class="fa-solid fa-cash-register mr-2"></i> Proceed to Checkout
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ==========================================
+             VIEW: INVENTORY MANAGEMENT
+             ========================================== -->
+        <section id="view-inventory" class="view-panel">
+          <div class="filter-bar">
+            <div class="filter-left">
+              <div class="search-input-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="inventorySearch" class="search-input" placeholder="Search products...">
+              </div>
+            </div>
+            <div class="filter-right">
+              <button id="addInventoryBtn" class="btn-primary" style="margin-top:0; padding: 10px 20px;">
+                <i class="fa-solid fa-plus"></i> Add New Product
+              </button>
+            </div>
+          </div>
+
+          <!-- Inventory Grid/Table -->
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Product ID</th>
+                  <th>Product Name</th>
+                  <th>Unit Price</th>
+                  <th>Current Stock</th>
+                  <th>Stock Status</th>
+                  <th class="admin-only">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="inventoryTableBody">
+                <!-- Dynamically updated -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             VIEW: EXPENSE TRACKING
+             ========================================== -->
+        <section id="view-expenses" class="view-panel">
+          <div class="filter-bar">
+            <div class="filter-left">
+              <div class="search-input-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="expenseSearch" class="search-input" placeholder="Search expenses description...">
+              </div>
+              <select id="expenseFilterCategory" class="form-select">
+                <option value="">All Categories</option>
+                <option value="Feeds">Feeds</option>
+                <option value="Maintenance">Maintenance</option>
+                <option value="Utilities">Utilities</option>
+                <option value="Transportation">Transportation</option>
+                <option value="Supplies">Supplies</option>
+                <option value="Other">Other</option>
+              </select>
+              <input type="date" id="expenseFilterDate" class="form-input-inline">
+            </div>
+            <div class="filter-right">
+              <button id="addExpenseBtn" class="btn-primary" style="margin-top:0; padding: 10px 20px;">
+                <i class="fa-solid fa-plus"></i> Log Expense
+              </button>
+            </div>
+          </div>
+
+          <!-- Expenses Summary bar -->
+          <div class="card" style="padding: 15px 25px; margin-bottom: 20px; background: var(--primary-light);">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+              <span style="font-weight:700; color: var(--primary-dark); font-size:1.1rem;">
+                <i class="fa-solid fa-sack-dollar"></i> Filtered Expenses Sum:
+              </span>
+              <span id="expensesSumVal" style="font-size:1.6rem; font-weight:800; color: var(--danger);">
+                ₱0.00
+              </span>
+            </div>
+          </div>
+
+          <!-- Expenses Table -->
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Category</th>
+                  <th>Description</th>
+                  <th>Amount</th>
+                  <th>Logged By</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="expensesTableBody">
+                <!-- Dynamically updated -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             VIEW: SALES HISTORY
+             ========================================== -->
+        <section id="view-sales" class="view-panel">
+          <div class="filter-bar">
+            <div class="filter-left">
+              <div class="search-input-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="salesSearch" class="search-input" placeholder="Search Tx Number...">
+              </div>
+              <input type="date" id="salesFilterDate" class="form-input-inline">
+            </div>
+            <div class="filter-right">
+              <button id="exportSalesCSVBtn" class="btn-secondary">
+                <i class="fa-solid fa-file-csv"></i> Export to CSV
+              </button>
+            </div>
+          </div>
+
+          <!-- Transactions list -->
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Transaction No</th>
+                  <th>Date & Time</th>
+                  <th>Items Sold</th>
+                  <th>Grand Total</th>
+                  <th>Cash Received</th>
+                  <th>Change Given</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="salesTableBody">
+                <!-- Dynamic rows -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             VIEW: REPORTS MODULE
+             ========================================== -->
+        <section id="view-reports" class="view-panel">
+          <div class="filter-bar no-print">
+            <div class="filter-left">
+              <select id="reportPeriodSelect" class="form-select">
+                <option value="daily">Daily Report (Today)</option>
+                <option value="weekly">Weekly Report (Last 7 Days)</option>
+                <option value="monthly">Monthly Report (This Month)</option>
+                <option value="custom">Custom Date Range</option>
+              </select>
+              <div id="reportCustomRangeContainer" style="display:none; align-items:center; gap: 8px;">
+                <input type="date" id="reportStartDate" class="form-input-inline">
+                <span class="text-muted">to</span>
+                <input type="date" id="reportEndDate" class="form-input-inline">
+              </div>
+              <button id="generateReportBtn" class="btn-primary" style="margin-top:0; padding: 8px 16px;">
+                Generate
+              </button>
+            </div>
+            <div class="filter-right">
+              <button id="printReportBtn" class="btn-secondary">
+                <i class="fa-solid fa-print"></i> Print Report
+              </button>
+            </div>
+          </div>
+
+          <!-- Printable Report Container -->
+          <div id="printableReportCard" class="card">
+            <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid var(--primary); padding-bottom: 15px;">
+              <h2 id="reportFarmNameHeader" style="color:var(--primary-dark); font-weight:800;">Adea's Farm</h2>
+              <h3 id="reportTitle" style="font-weight:600; color:var(--text-dark);">Daily Business Summary</h3>
+              <p id="reportSubdate" class="text-muted">Generated on June 21, 2026</p>
+            </div>
+
+            <!-- Report stat boxes -->
+            <div class="dashboard-grid" style="margin-bottom: 30px;">
+              <div class="stat-card sales" style="box-shadow:none; border: 1px solid var(--border-color);">
+                <div class="stat-info">
+                  <span class="stat-label">Sales Revenue</span>
+                  <span id="repTotalSales" class="stat-value">₱0.00</span>
+                </div>
+              </div>
+              <div class="stat-card expenses" style="box-shadow:none; border: 1px solid var(--border-color);">
+                <div class="stat-info">
+                  <span class="stat-label">Business Expenses</span>
+                  <span id="repTotalExpenses" class="stat-value">₱0.00</span>
+                </div>
+              </div>
+              <div class="stat-card profit" style="box-shadow:none; border: 1px solid var(--border-color);">
+                <div class="stat-info">
+                  <span class="stat-label">Net Operating Income</span>
+                  <span id="repNetProfit" class="stat-value">₱0.00</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Visual breakdown & Table -->
+            <div class="chart-grid" style="margin-bottom: 30px;">
+              <div class="card" style="box-shadow:none; border:1px solid var(--border-color); height: 350px;">
+                <h4 style="font-weight:700; margin-bottom: 15px; color: var(--primary-dark);">Sales vs Expenses</h4>
+                <div style="height: 260px; position:relative;">
+                  <canvas id="reportComparisonChart"></canvas>
+                </div>
+              </div>
+              
+              <div class="card" style="box-shadow:none; border:1px solid var(--border-color); height: 350px;">
+                <h4 style="font-weight:700; margin-bottom: 15px; color: var(--primary-dark);">Expense Categories</h4>
+                <div style="height: 260px; position:relative;">
+                  <canvas id="reportExpensesChart"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- Items sold breakdown -->
+            <div class="table-responsive" style="box-shadow:none; border: 1px solid var(--border-color);">
+              <h4 style="font-weight:700; padding: 15px 20px; color:var(--primary-dark); border-bottom: 1px solid var(--border-color);">
+                Product Sales Breakdown
+              </h4>
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Product Name</th>
+                    <th>Qty Sold</th>
+                    <th>Average Unit Price</th>
+                    <th>Total Sales</th>
+                  </tr>
+                </thead>
+                <tbody id="reportProductsTableBody">
+                  <tr>
+                    <td colspan="4" class="text-muted" style="text-align:center;">No records during this period.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             VIEW: SETTINGS PAGE
+             ========================================== -->
+        <section id="view-settings" class="view-panel">
+          <div class="settings-grid">
+            
+            <!-- Farm Details -->
+            <div class="settings-card">
+              <h3 class="settings-section-title">
+                <i class="fa-solid fa-tractor"></i> Farm Settings
+              </h3>
+              
+              <form id="farmSettingsForm">
+                <div class="form-group">
+                  <label class="form-label">Farm Business Name</label>
+                  <input type="text" id="settingsFarmName" class="form-control" style="padding-left:15px;" placeholder="Adea's Farm">
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Currency Symbol</label>
+                  <select id="settingsCurrency" class="form-control" style="padding-left:15px; height: auto;">
+                    <option value="₱">PHP (₱)</option>
+                    <option value="$">USD ($)</option>
+                    <option value="€">EUR (€)</option>
+                    <option value="¥">JPY (¥)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Thermal Printer Paper Width</label>
+                  <select id="settingsPrinterWidth" class="form-control" style="padding-left:15px; height: auto;">
+                    <option value="80mm">80mm Paper Width (Standard)</option>
+                    <option value="58mm">58mm Paper Width (Mobile/Mini)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Receipt Footer Message</label>
+                  <textarea id="settingsReceiptFooter" class="form-control" style="padding-left:15px; min-height: 80px;" placeholder="Thank you for supporting Adea's Farm!"></textarea>
+                </div>
+
+                <button type="submit" class="btn-primary">
+                  <i class="fa-solid fa-floppy-disk mr-2"></i> Save Configurations
+                </button>
+              </form>
+            </div>
+
+            <!-- Database & System Stats -->
+            <div class="settings-card">
+              <h3 class="settings-section-title">
+                <i class="fa-solid fa-server"></i> System Integration & Role Details
+              </h3>
+              
+              <div style="display:flex; flex-direction:column; gap:15px;">
+                <div class="demo-credentials" style="margin-top:0;">
+                  <h5>Authentication Provider:</h5>
+                  <p>Using: <strong id="sysAuthMode">Firebase Auth / LocalStorage Mock</strong></p>
+                  <p>To configure Firebase, provide active variables inside <code>firebase-config.js</code>.</p>
+                </div>
+
+                <div class="demo-credentials" style="margin-top:0; border-color: var(--info);">
+                  <h5 style="color: var(--info);"><i class="fa-solid fa-shield-halved"></i> Role Permissions</h5>
+                  <p><strong>Admin Profile:</strong> Full permissions. Able to manage inventory, edit/delete products, and purge sales/expense documents.</p>
+                  <p><strong>Staff Profile:</strong> Operates POS cashier registry, logs farm expenses, generates sales summaries, and views charts. Cannot delete transaction histories or configure base inventories.</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+      </div>
+
+      <!-- App Footer -->
+      <footer class="footer" style="padding: 15px 30px; text-align: center; border-top: 1px solid var(--border-color); background: var(--bg-card); font-size: 0.85rem; color: var(--text-muted); flex-shrink: 0;">
+        © 2026 Adea's Farm. All Rights Reserved.
+      </footer>
+      
+    </main>
+  </div>
+
+  <!-- ==========================================================================
+       MODALS & DIALOGS
+       ========================================================================== -->
+
+  <!-- MODAL: Checkout Drawer (Cash Input & Change calculation) -->
+  <div id="checkoutModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span>Cart Checkout - Settlement</span>
+        <button class="modal-close" onclick="closeModal('checkoutModal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="checkout-details">
+          <div class="checkout-row large">
+            <span>Total Payable:</span>
+            <span id="checkoutTotalPayable">₱0.00</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Enter Cash Received</label>
+            <div class="input-wrapper">
+              <input type="number" id="checkoutCashInput" class="cash-input-field" placeholder="0.00" min="0" step="any" autofocus>
+            </div>
+          </div>
+
+          <div id="checkoutChangeBox" class="change-display negative">
+            <span>Change Due:</span>
+            <span id="checkoutChangeVal">₱0.00</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal('checkoutModal')">Cancel</button>
+        <button id="checkoutConfirmBtn" class="btn-submit" disabled>Complete Transaction</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Receipt Thermal Print Preview -->
+  <div id="receiptPreviewModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 400px;">
+      <div class="modal-header">
+        <span>Thermal Receipt Preview</span>
+        <button class="modal-close" onclick="closeModal('receiptPreviewModal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" style="background: var(--bg-main); padding: 15px; display:flex; justify-content:center;">
+        <!-- The actual preview container that styling can resize -->
+        <div id="thermalReceiptPreview" class="receipt-container w-80">
+          <!-- Dynamically populated thermal receipt HTML -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal('receiptPreviewModal')">Close</button>
+        <button id="printReceiptTriggerBtn" class="btn-submit">
+          <i class="fa-solid fa-print"></i> Print Receipt
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Inventory Add/Edit -->
+  <div id="productModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span id="productModalTitle">Add New Product</span>
+        <button class="modal-close" onclick="closeModal('productModal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="productForm">
+        <div class="modal-body">
+          <input type="hidden" id="productModalId">
+          
+          <div class="form-group">
+            <label class="form-label">Product Name</label>
+            <input type="text" id="productModalName" class="form-control" style="padding-left:15px;" placeholder="e.g. Hito" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Unit Price (₱)</label>
+            <input type="number" id="productModalPrice" class="form-control" style="padding-left:15px;" placeholder="0.00" min="0" step="any" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Current Stock Count</label>
+            <input type="number" id="productModalStock" class="form-control" style="padding-left:15px;" placeholder="0" min="0" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" onclick="closeModal('productModal')">Cancel</button>
+          <button type="submit" class="btn-submit">Save Product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Expense Add/Edit -->
+  <div id="expenseModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span id="expenseModalTitle">Log Business Expense</span>
+        <button class="modal-close" onclick="closeModal('expenseModal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="expenseForm">
+        <div class="modal-body">
+          <input type="hidden" id="expenseModalId">
+          
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select id="expenseModalCategory" class="form-control" style="padding-left:15px; height:auto;" required>
+              <option value="Feeds">Feeds</option>
+              <option value="Maintenance">Maintenance</option>
+              <option value="Utilities">Utilities</option>
+              <option value="Transportation">Transportation</option>
+              <option value="Supplies">Supplies</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <input type="text" id="expenseModalDesc" class="form-control" style="padding-left:15px;" placeholder="e.g. 5 bags of organic fish feeds" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Amount (₱)</label>
+            <input type="number" id="expenseModalAmount" class="form-control" style="padding-left:15px;" placeholder="0.00" min="0" step="any" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Date</label>
+            <input type="date" id="expenseModalDate" class="form-control" style="padding-left:15px;" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" onclick="closeModal('expenseModal')">Cancel</button>
+          <button type="submit" class="btn-submit">Save Expense Log</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Confirmation Dialog (Deletes, Purges) -->
+  <div id="confirmModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 400px;">
+      <div class="modal-header" style="background:#FFEBEE; color:var(--danger);">
+        <span>Verify Action</span>
+        <button class="modal-close" style="color:var(--danger);" onclick="closeModal('confirmModal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <p id="confirmModalText" style="font-weight: 500; font-size:1rem;">Are you sure you want to proceed with this delete? This action is permanent.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal('confirmModal')">No, Abort</button>
+        <button id="confirmModalYesBtn" class="btn-submit" style="background:var(--danger);">Yes, Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       HIDDEN PRINT ONLY ELEMENT (TARGETED BY PRINT LAYOUT)
+       ========================================================================== -->
+  <div id="printArea" class="print-area-target">
+    <!-- Receipts or printable reports HTML dynamically cloned or rendered here before print -->
+  </div>
+
+  <!-- Firebase Compat SDKs (Avoids top-level await bundling errors) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
+  <!-- Main System Logic -->
+  <script type="module" src="script.js"></script>
+</body>
+</html>
