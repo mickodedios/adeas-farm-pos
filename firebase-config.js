@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Adea's Farm POS & Expense Tracker - Firebase & Database Config
  * Handles Firebase Auth & Firestore connection with an automatic LocalStorage mock fallback
  * to support immediate testing and easy deployment before Firebase setup.
@@ -277,6 +277,13 @@ function setupMockServices() {
           email: "admin@adeasfarm.com",
           role: "admin",
           displayName: "Farm Admin"
+        };
+      } else if (email === "staff@adeasfarm.com" && password === "staff123") {
+        currentUser = {
+          uid: "mock_staff_123",
+          email: "staff@adeasfarm.com",
+          role: "staff",
+          displayName: "Farm Staff"
         };
       } else {
         throw new Error("Invalid username or password. Please try again.");
