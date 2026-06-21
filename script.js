@@ -10,7 +10,7 @@ const state = {
   expenses: [],
   settings: {
     farmName: "Adea's Farm",
-    currencySymbol: "₱",
+    currencySymbol: "P",
     printerWidth: "80mm",
     footerMessage: "Thank you for supporting Adea's Farm!"
   },
@@ -513,7 +513,7 @@ function getLocalDateString(isoString) {
 
 // Formatter for prices
 function formatCurrency(amount) {
-  const symbol = state.settings.currencySymbol || "₱";
+  const symbol = state.settings.currencySymbol || "P";
   return `${symbol}${parseFloat(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
@@ -961,99 +961,88 @@ async function completeCheckout() {
   }
 }
 
-// Render receipt preview
+// Render receipt preview using HTML Table layout
+
 function renderReceiptPreview(sale) {
   const container = document.getElementById("thermalReceiptPreview");
   if (!container) return;
 
-  // Set Printer width paper styling
-  const paperWidth = state.settings.printerWidth || "80mm";
-  container.className = `receipt-container w-${paperWidth.replace('mm', '')}`;
-
+  const currency = state.settings.currencySymbol || "P";
   const formattedDate = new Date(sale.createdAt).toLocaleString('en-US', {
     year: 'numeric', month: '2-digit', day: '2-digit',
     hour: '2-digit', minute: '2-digit', hour12: true
-  });
+  }).replace(',', '');
 
-  const currency = state.settings.currencySymbol || "₱";
+  const cw = 26; // Reduced to 26 so cw (26) + margin (2) = 28 (the safe printer limit)
+  const margin = "  "; // 2 spaces global left margin to shift everything to the right
+  
+  function center(t) {
+    if (t.length >= cw) return margin + t.substring(0, cw);
+    // Use Math.ceil to add an extra space on the left, shifting the text 1 character right
+    const p = Math.ceil((cw - t.length) / 2);
+    return margin + " ".repeat(p) + t;
+  }
+  
+  function lr(l, r) {
+    const s = cw - l.length - r.length;
+    if (s <= 0) return margin + l.substring(0, cw - r.length - 1) + " " + r;
+    return margin + l + " ".repeat(s) + r;
+  }
+  
+  function lcr(l, c, r) {
+    // Exact column sizing for 26 chars: Left 10, Center 4, Right 12
+    let L = l.length > 10 ? l.substring(0, 10) : l.padEnd(10, " ");
+    let C = c.padStart(2, " ").padEnd(4, " ");
+    let R = r.padStart(12, " ");
+    return margin + L + C + R;
+  }
 
-  let itemsHtml = sale.items.map(item => {
+  const dashes = margin + "-".repeat(cw);
+
+  let out = "";
+  out += margin + "\n";
+  out += center("ADEA'S FARM") + "\n";
+  out += center("POS RECEIPT") + "\n";
+  out += margin + "\n";
+  out += dashes + "\n";
+  out += lr("Tx No:", sale.transactionNo) + "\n";
+  out += lr("Date:", formattedDate) + "\n";
+  out += lr("Cashier:", sale.cashier || "Staff") + "\n";
+  out += dashes + "\n";
+  
+  sale.items.forEach(item => {
     const subtotal = item.price * item.qty;
-    return `
-      <tr>
-        <td>
-          ${item.name}<br>
-          <small>${item.qty} x ${currency}${item.price.toFixed(2)}</small>
-        </td>
-        <td style="text-align: right; vertical-align: bottom;">
-          ${currency}${subtotal.toFixed(2)}
-        </td>
-      </tr>
-    `;
-  }).join("");
+    out += lcr(item.name, `x${item.qty}`, `${currency}${subtotal.toFixed(2)}`) + "\n";
+  });
+  
+  out += dashes + "\n";
+  out += lr("TOTAL:", `${currency}${sale.total.toFixed(2)}`) + "\n";
+  out += lr("Cash:", `${currency}${sale.cash.toFixed(2)}`) + "\n";
+  out += lr("Change:", `${currency}${sale.change.toFixed(2)}`) + "\n";
+  out += dashes + "\n";
+  out += margin + "\n";
+  out += center("Adea's Farm thanks you.") + "\n";
+  
+  // 4 protected blank lines to force paper feed past the tear bar
+  out += margin + " \n" + margin + " \n" + margin + " \n" + margin + " \n.";
 
-  container.innerHTML = `
-    <div class="receipt-header">
-      <div class="receipt-farm-name">${state.settings.farmName}</div>
-      <div style="font-size: 0.9em;">POS RECEIPT</div>
-    </div>
-    <div class="receipt-divider"></div>
-    <div class="receipt-info-row">
-      <span>Tx No:</span>
-      <span style="font-weight:bold;">${sale.transactionNo}</span>
-    </div>
-    <div class="receipt-info-row">
-      <span>Date:</span>
-      <span>${formattedDate}</span>
-    </div>
-    <div class="receipt-info-row">
-      <span>Cashier:</span>
-      <span>${sale.cashier || "Staff"}</span>
-    </div>
-    <div class="receipt-divider"></div>
-    <table class="receipt-items-table">
-      <thead>
-        <tr>
-          <th style="font-size: 0.95em;">Product Details</th>
-          <th style="text-align: right; font-size: 0.95em;">Amount</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${itemsHtml}
-      </tbody>
-    </table>
-    <div class="receipt-divider"></div>
-    <div class="receipt-total-section">
-      <div class="receipt-total-row">
-        <span>GRAND TOTAL:</span>
-        <span>${currency}${sale.total.toFixed(2)}</span>
-      </div>
-      <div class="receipt-total-row" style="font-weight: normal; font-size: 0.95em;">
-        <span>Cash Tendered:</span>
-        <span>${currency}${sale.cash.toFixed(2)}</span>
-      </div>
-      <div class="receipt-total-row" style="font-weight: normal; font-size: 0.95em;">
-        <span>Change:</span>
-        <span>${currency}${sale.change.toFixed(2)}</span>
-      </div>
-    </div>
-    <div class="receipt-divider"></div>
-    <div class="receipt-footer">
-      <div>${state.settings.footerMessage}</div>
-      <div style="margin-top: 10px; font-size: 0.8em; color: #555;">Powered by Antigravity POS</div>
-    </div>
-  `;
-
+  container.innerHTML = `<pre style="font-family: 'Courier New', Courier, monospace; font-size: 13px; color: #000; margin: 0 auto; width: 58mm; padding: 10px 0; overflow: hidden; font-weight: bold; line-height: 1.2;">${out}</pre>`;
+  
   openModal("receiptPreviewModal");
 }
 
 function printReceipt() {
-  const receiptHTML = document.getElementById("thermalReceiptPreview").outerHTML;
-  const printArea = document.getElementById("printArea");
-  
-  printArea.innerHTML = receiptHTML;
+  const receiptHtml = document.getElementById("thermalReceiptPreview").innerHTML;
+  const printArea = document.createElement("div");
+  printArea.id = "print-area";
+  printArea.innerHTML = receiptHtml;
+  document.body.appendChild(printArea);
+
   window.print();
-  printArea.innerHTML = ""; // clean up
+
+  setTimeout(() => {
+    document.body.removeChild(printArea);
+  }, 100);
 }
 
 // ==========================================================================

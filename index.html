@@ -110,7 +110,10 @@
           <button id="sidebarToggle" class="menu-toggle">
             <i class="fa-solid fa-bars"></i>
           </button>
-          <h2 id="currentViewTitle" class="header-title">Dashboard</h2>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <h2 id="currentViewTitle" class="header-title">Dashboard</h2>
+            <span style="background: red; color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-weight: bold;">v10.0</span>
+          </div>
         </div>
         
         <div class="header-right">
@@ -149,7 +152,7 @@
             <div class="stat-card sales">
               <div class="stat-info">
                 <span class="stat-label">Sales Today</span>
-                <span id="dashSalesToday" class="stat-value">₱0.00</span>
+                <span id="dashSalesToday" class="stat-value">P0.00</span>
               </div>
               <div class="stat-icon"><i class="fa-solid fa-chart-simple"></i></div>
             </div>
@@ -157,7 +160,7 @@
             <div class="stat-card expenses">
               <div class="stat-info">
                 <span class="stat-label">Expenses Today</span>
-                <span id="dashExpensesToday" class="stat-value">₱0.00</span>
+                <span id="dashExpensesToday" class="stat-value">P0.00</span>
               </div>
               <div class="stat-icon"><i class="fa-solid fa-wallet"></i></div>
             </div>
@@ -165,7 +168,7 @@
             <div class="stat-card profit">
               <div class="stat-info">
                 <span class="stat-label">Net Profit Today</span>
-                <span id="dashNetProfit" class="stat-value">₱0.00</span>
+                <span id="dashNetProfit" class="stat-value">P0.00</span>
               </div>
               <div class="stat-icon"><i class="fa-solid fa-scale-balanced"></i></div>
             </div>
@@ -248,11 +251,11 @@
               <div class="cart-summary">
                 <div class="summary-row">
                   <span>Subtotal</span>
-                  <span id="posSubtotal">₱0.00</span>
+                  <span id="posSubtotal">P0.00</span>
                 </div>
                 <div class="summary-row total">
                   <span>Total Amount</span>
-                  <span id="posTotal">₱0.00</span>
+                  <span id="posTotal">P0.00</span>
                 </div>
                 
                 <button type="button" id="posCheckoutBtn" class="checkout-btn" disabled>
@@ -337,7 +340,7 @@
                 <i class="fa-solid fa-sack-dollar"></i> Filtered Expenses Sum:
               </span>
               <span id="expensesSumVal" style="font-size:1.6rem; font-weight:800; color: var(--danger);">
-                ₱0.00
+                P0.00
               </span>
             </div>
           </div>
@@ -443,19 +446,19 @@
               <div class="stat-card sales" style="box-shadow:none; border: 1px solid var(--border-color);">
                 <div class="stat-info">
                   <span class="stat-label">Sales Revenue</span>
-                  <span id="repTotalSales" class="stat-value">₱0.00</span>
+                  <span id="repTotalSales" class="stat-value">P0.00</span>
                 </div>
               </div>
               <div class="stat-card expenses" style="box-shadow:none; border: 1px solid var(--border-color);">
                 <div class="stat-info">
                   <span class="stat-label">Business Expenses</span>
-                  <span id="repTotalExpenses" class="stat-value">₱0.00</span>
+                  <span id="repTotalExpenses" class="stat-value">P0.00</span>
                 </div>
               </div>
               <div class="stat-card profit" style="box-shadow:none; border: 1px solid var(--border-color);">
                 <div class="stat-info">
                   <span class="stat-label">Net Operating Income</span>
-                  <span id="repNetProfit" class="stat-value">₱0.00</span>
+                  <span id="repNetProfit" class="stat-value">P0.00</span>
                 </div>
               </div>
             </div>
@@ -522,7 +525,7 @@
                 <div class="form-group">
                   <label class="form-label">Currency Symbol</label>
                   <select id="settingsCurrency" class="form-control" style="padding-left:15px; height: auto;">
-                    <option value="₱">PHP (₱)</option>
+                    <option value="P">PHP (P)</option>
                     <option value="$">USD ($)</option>
                     <option value="€">EUR (€)</option>
                     <option value="¥">JPY (¥)</option>
@@ -597,7 +600,7 @@
         <div class="checkout-details">
           <div class="checkout-row large">
             <span>Total Payable:</span>
-            <span id="checkoutTotalPayable">₱0.00</span>
+            <span id="checkoutTotalPayable">P0.00</span>
           </div>
 
           <div class="form-group">
@@ -609,7 +612,7 @@
 
           <div id="checkoutChangeBox" class="change-display negative">
             <span>Change Due:</span>
-            <span id="checkoutChangeVal">₱0.00</span>
+            <span id="checkoutChangeVal">P0.00</span>
           </div>
         </div>
       </div>
@@ -659,7 +662,7 @@
           </div>
           
           <div class="form-group">
-            <label class="form-label">Unit Price (₱)</label>
+            <label class="form-label">Unit Price (P)</label>
             <input type="number" id="productModalPrice" class="form-control" style="padding-left:15px;" placeholder="0.00" min="0" step="any" required>
           </div>
           
@@ -705,7 +708,7 @@
           </div>
           
           <div class="form-group">
-            <label class="form-label">Amount (₱)</label>
+            <label class="form-label">Amount (P)</label>
             <input type="number" id="expenseModalAmount" class="form-control" style="padding-left:15px;" placeholder="0.00" min="0" step="any" required>
           </div>
           

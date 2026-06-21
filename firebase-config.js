@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Adea's Farm POS & Expense Tracker - Firebase & Database Config
  * Handles Firebase Auth & Firestore connection with an automatic LocalStorage mock fallback
  * to support immediate testing and easy deployment before Firebase setup.
@@ -157,7 +157,7 @@ function setupMockServices() {
     id: "global",
     farmName: "Adea's Farm",
     footerMessage: "Thank you for supporting Adea's Farm!",
-    currencySymbol: "₱",
+    currencySymbol: "P",
     printerWidth: "80mm",
     updatedAt: new Date().toISOString()
   };

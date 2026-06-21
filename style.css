@@ -1595,45 +1595,34 @@ a {
   }
 }
 
-/* ==========================================================================
-   Print Styles Overrides
-   ========================================================================== */
 @media print {
-  body {
-    background: #fff;
-    color: #000;
+  body * {
+    visibility: hidden;
   }
-  
-  /* Hide all app wrapper shells except the target print area */
-  .app-wrapper, .modal-overlay, .toast-container, .loader-overlay {
-    display: none !important;
+
+  #print-area,
+  #print-area * {
+    visibility: visible;
+    color: #000 !important;
   }
-  
-  /* Explicit layout override for printing receipts and reports */
-  .print-area-target {
-    display: block !important;
+
+  #print-area {
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
-  }
-  
-  .receipt-container {
-    box-shadow: none !important;
-    border: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
+    margin: 0;
+    padding: 0;
   }
 
-  /* Support receipt sizes exactly */
-  .receipt-container.w-58 {
-    width: 58mm !important;
+  .modal-overlay,
+  .toast-container,
+  .app-wrapper {
+    display: none !important;
   }
 
-  .receipt-container.w-80 {
-    width: 80mm !important;
+  @page {
+    margin: 0;
+    size: auto;
   }
-}
-.print-area-target {
-  display: none;
 }
