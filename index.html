@@ -112,7 +112,7 @@
           </button>
           <div style="display: flex; align-items: center; gap: 10px;">
             <h2 id="currentViewTitle" class="header-title">Dashboard</h2>
-            <span style="background: red; color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-weight: bold;">v11.0</span>
+            <span style="background: red; color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-weight: bold;">v12.0</span>
           </div>
         </div>
         
@@ -636,10 +636,16 @@
           <!-- Dynamically populated thermal receipt HTML -->
         </div>
       </div>
-      <div class="modal-footer">
+      <div class="modal-footer" style="flex-wrap: wrap; justify-content: center; gap: 8px;">
         <button class="btn-cancel" onclick="closeModal('receiptPreviewModal')">Close</button>
+        <button id="copyReceiptBtn" class="btn-submit" style="background: #f0c040; color: #000;">
+          <i class="fa-solid fa-copy"></i> Copy Text
+        </button>
+        <button id="shareReceiptBtn" class="btn-submit" style="background: #25D366;">
+          <i class="fa-solid fa-share-nodes"></i> Share
+        </button>
         <button id="printReceiptTriggerBtn" class="btn-submit">
-          <i class="fa-solid fa-print"></i> Print Receipt
+          <i class="fa-solid fa-print"></i> Print (AirPrint)
         </button>
       </div>
     </div>

@@ -188,6 +188,30 @@ function setupUIEventListeners() {
     printReceipt();
   });
 
+  document.getElementById("copyReceiptBtn")?.addEventListener("click", () => {
+    const text = document.getElementById("thermalReceiptPreview").innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      alert("Receipt text copied! You can now paste it into your Bluetooth printing app.");
+    }).catch(err => {
+      console.error("Failed to copy text: ", err);
+      alert("Could not copy text automatically. Please long-press the text to copy.");
+    });
+  });
+
+  document.getElementById("shareReceiptBtn")?.addEventListener("click", () => {
+    const text = document.getElementById("thermalReceiptPreview").innerText;
+    if (navigator.share) {
+      navigator.share({
+        title: "ADEA'S FARM POS Receipt",
+        text: text
+      }).catch(err => {
+        console.error("Share failed:", err);
+      });
+    } else {
+      alert("Sharing is not supported on this device/browser. Please use the Copy button instead.");
+    }
+  });
+
   // Inventory search
   document.getElementById("inventorySearch").addEventListener("input", () => {
     renderInventory();
@@ -1038,12 +1062,26 @@ function printReceipt() {
   printArea.innerHTML = receiptHtml;
   document.body.appendChild(printArea);
 
-  window.print();
-
+  // Small delay for Safari DOM rendering
   setTimeout(() => {
-    document.body.removeChild(printArea);
+    window.print();
+    
+    // Fallback cleanup in case onafterprint doesn't fire
+    setTimeout(() => {
+      if (document.body.contains(printArea)) {
+        document.body.removeChild(printArea);
+      }
+    }, 2000);
   }, 100);
 }
+
+// Cleanup properly after print dialog closes
+window.onafterprint = function() {
+  const printArea = document.getElementById("print-area");
+  if (printArea && document.body.contains(printArea)) {
+    document.body.removeChild(printArea);
+  }
+};
 
 // ==========================================================================
 // Inventory Management Logic
