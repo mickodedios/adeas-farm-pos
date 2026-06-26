@@ -970,6 +970,8 @@ async function completeCheckout() {
     // 3. Clear cart and active TX No
     state.cart = [];
     state.activeTxNo = "";
+    
+    renderCart();
 
     closeModal("checkoutModal");
     showToast("Checkout finalized successfully!", "success");
