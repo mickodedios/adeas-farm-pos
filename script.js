@@ -1046,9 +1046,6 @@ function renderReceiptPreview(sale) {
   out += dashes + "\n";
   out += margin + "\n";
   out += center("Adea's Farm thanks you.") + "\n";
-  
-  // 4 protected blank lines to force paper feed past the tear bar
-  out += margin + " \n" + margin + " \n" + margin + " \n" + margin + " \n.";
 
   container.innerHTML = `<pre style="font-family: 'Courier New', Courier, monospace; font-size: 13px; color: #000; margin: 0 auto; width: 58mm; padding: 10px 0; overflow: hidden; font-weight: bold; line-height: 1.2;">${out}</pre>`;
   
